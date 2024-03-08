@@ -1,11 +1,11 @@
 {
-	"name": "HardStuff_Http",
+	"name": "HardStuff_pio_lib_Http",
 	"version": "0.0.1",
-	"description": "A \"Hello world\" program is a computer program that outputs \"Hello World\" (or some variant) on a display device",
+	"description": "A wrapper around the ArduinoHttpClient that makes get and post requests far easier.",
 	"keywords": "http",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/username/hello-world.git"
+		"url": "https://github.com/Hard-Stuff/HardStuff_pio_lib_Http.git"
 	},
 	"authors": [
 		{
