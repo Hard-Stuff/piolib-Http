@@ -1,7 +1,6 @@
 #pragma once
 
 // libs
-#include <Arduino.h>
 #include <TimeLib.h>
 #include <ArduinoHttpClient.h>
 
@@ -14,7 +13,7 @@ struct KeyValuePair
     String value = "";
 };
 
-struct HttpRequest
+struct HardStuffHttpRequest
 {
     KeyValuePair headers[MAX_HEADERS]; // Request headers
     KeyValuePair params[MAX_HEADERS];  // Request headers
@@ -82,7 +81,7 @@ struct HttpRequest
     }
 
     /**
-     * @brief Print the HttpRequest to serial (useful for debugging or analysing)
+     * @brief Print the HardStuffHttpRequest to serial (useful for debugging or analysing)
      *
      * @param output_stream Override the stream, e.g. if dumping to an FS file
      */
@@ -98,7 +97,7 @@ struct HttpRequest
     }
 };
 
-struct HttpResponse
+struct HardStuffHttpResponse
 {
     int status_code = 0;               // HTTP status code
     KeyValuePair headers[MAX_HEADERS]; // Response headers
@@ -106,41 +105,26 @@ struct HttpResponse
     String body = "";                  // Response body
     int content_length = 0;            // Content length
     bool is_chunked = false;           // Flag for chunked response
-    String error_message = "";         // Error message, if any
 
-    // Function to add a header (can be used while parsing the response)
-    void addHeader(const String &key, const String &value)
-    {
-        if (header_count < MAX_HEADERS)
-        {
-            headers[header_count].key = key;
-            headers[header_count].value = value;
-            header_count = min(header_count + 1, MAX_HEADERS);
-        }
-        else
-            Serial.println("MAX HEADERS REACHED!");
-    }
-
-    // Function to check if there was an error
-    bool hasError() const { return !error_message.isEmpty(); }
+    // Quick-check if the status code was between 200 and 300
     bool success() const { return status_code >= 200 && status_code < 300; }
 
     /**
-     * @brief Print the HttpResponse to serial (useful for debugging or analysing)
+     * @brief Print the HardStuffHttpResponse to serial (useful for debugging or analysing)
      *
      * @param output_stream Override the stream, e.g. if dumping to an FS file
      */
     void print(Stream *output_stream = &Serial) const
     {
-        Serial.println("Response status code: " + String(status_code));
-        Serial.println(F("Response Headers:"));
+        output_stream->println("Response status code: " + String(status_code));
+        output_stream->println(F("Response Headers:"));
         for (int i = 0; i <= header_count; i++)
-            Serial.println("    " + headers[i].key + " : " + headers[i].value);
-        Serial.println("Content length: " + String(content_length));
-        Serial.println(F("Response:"));
-        Serial.println(body);
-        Serial.println("Response is " + String(is_chunked ? "" : "not ") + "chunked.");
-        Serial.println("Body length is: " + String(body.length()));
+            output_stream->println("    " + headers[i].key + " : " + headers[i].value);
+        output_stream->println("Content length: " + String(content_length));
+        output_stream->println(F("Response:"));
+        output_stream->println(body);
+        output_stream->println("Response is " + String(is_chunked ? "" : "not ") + "chunked.");
+        output_stream->println("Body length is: " + String(body.length()));
     }
 
     /**
@@ -154,7 +138,6 @@ struct HttpResponse
         body = "";            // Response body
         content_length = 0;   // Content length
         is_chunked = false;   // Flag for chunked response
-        error_message = "";   // Error message, if any
 
         // Reset headers and header count
         for (int i = 0; i < header_count; ++i)
@@ -174,30 +157,15 @@ public:
     HardStuffHttpClient(Client &underlying_client, const char *server_name, uint16_t server_port) : HttpClient(underlying_client, server_name, server_port){};
 
     /**
-     * @brief Any dedicated init processes
-     *
-     * @returns true if successful, otherwise false
-     */
-    bool init()
-    {
-        bool _s = true;
-        // HTTP_UNDERLYING_CLIENT.setTimeout(5000);
-        // _s = _s && SIMCOM::client.setCertificate(AWS_CERT_CA);
-        // this->connectionKeepAlive(); // Currently, this is needed for HTTPS
-        // client.setHandshakeTimeout(5000);
-        return _s;
-    }
-
-    /**
      * @brief Post some content string to a given endpoint of the attached server
      *
      * @param endpoint Given endpoint, e.g. "/device_1/shadow"
      * @param request A request object that contains contents and headers
-     * @return HttpResponse, the response as an HttpResponse object
+     * @return HardStuffHttpResponse, the response as an HardStuffHttpResponse object
      */
-    HttpResponse postToHTTPServer(String endpoint, HttpRequest *request)
+    HardStuffHttpResponse postToHTTPServer(String endpoint, HardStuffHttpRequest *request)
     {
-        HttpResponse response;
+        HardStuffHttpResponse response;
         // Post the HTTP request
 
         for (int i = 0; i < request->param_count; i++)
@@ -234,13 +202,18 @@ public:
         {
             if (this->headerAvailable())
             {
-                response.addHeader(this->readHeaderName(), this->readHeaderValue());
-                response.header_count = i;
+                response.headers[response.header_count].key = this->readHeaderName();
+                response.headers[response.header_count].value = this->readHeaderValue();
+                response.header_count = min(response.header_count + 1, MAX_HEADERS);
             }
             else
             {
                 break;
             }
+        }
+        if (this->headerAvailable())
+        {
+            Serial.println("MAX HEADERS REACHED!");
         }
         this->skipResponseHeaders();
         response.body = this->responseBody();
@@ -254,11 +227,11 @@ public:
      * @param endpoint Given endpoint, e.g. "/version"
      * @param request
      * @param skip_body Rarely used, only in circumstances where you want to stream the body response somewhere else (other than a string)
-     * @return HttpResponse
+     * @return HardStuffHttpResponse
      */
-    HttpResponse getFromHTTPServer(String endpoint, HttpRequest *request = nullptr, bool skip_body = false)
+    HardStuffHttpResponse getFromHTTPServer(String endpoint, HardStuffHttpRequest *request = nullptr, bool skip_body = false)
     {
-        HttpResponse response;
+        HardStuffHttpResponse response;
 
         if (request != nullptr)
         {
@@ -318,42 +291,5 @@ public:
             this->stop();
         }
         return response;
-    }
-
-public:
-    // helper functions
-    String formatTimeISO8601(time_t t)
-    {
-        char buffer[25];
-
-        // Break down time_t into its components
-        int Year = year(t);
-        int Month = month(t);
-        int Day = day(t);
-        int Hour = hour(t);
-        int Minute = minute(t);
-        int Second = second(t);
-
-        // Format the string in ISO 8601 format
-        // Note: This assumes UTC time. Adjust accordingly if using local time.
-        snprintf(buffer, sizeof(buffer), "%04d-%02d-%02dT%02d:%02d:%02d.000Z",
-                 Year, Month, Day, Hour, Minute, Second);
-
-        return String(buffer);
-    }
-
-    time_t formatTimeFromISO8601(String timestamp)
-    {
-        int Year, Month, Day, Hour, Minute, Second;
-        sscanf(timestamp.c_str(), "%04d-%02d-%02dT%02d:%02d:%02d.000Z",
-               &Year, &Month, &Day, &Hour, &Minute, &Second);
-        tmElements_t tm;
-        tm.Year = Year - 1970; // Adjust year
-        tm.Month = Month;      // Adjust month
-        tm.Day = Day;
-        tm.Hour = Hour;
-        tm.Minute = Minute;
-        tm.Second = Second;
-        return makeTime(tm); // Convert to time_t
     }
 };
