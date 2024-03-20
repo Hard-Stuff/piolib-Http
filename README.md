@@ -1,6 +1,6 @@
 # **Hard Stuff** libs: Http wrapper
 
-This lib is designed to abstract complexity away from using the ArduinoHttpClient library, specifically for GET and POST requests. This means:
+This PlatformIO lib is designed to abstract complexity away from using the ArduinoHttpClient library, specifically for GET and POST requests. This means:
 
 -   provide useful structs for bundling request and response details, `HardStuffHttpRequest` and `HardStuffHttpResponse`
 -   calling high-level functions rather than low-level functions (e.g. `getFromHTTPServer` with bundled request details and returning bundled response details, instead of `beginRequest` then `get` then manually loading each header then manually compiling the params in the url then...)

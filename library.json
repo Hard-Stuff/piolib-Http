@@ -1,11 +1,11 @@
 {
-	"name": "HardStuff_pio_lib_Http",
+	"name": "HardStuff-piolib-Http",
 	"version": "0.0.1",
 	"description": "A wrapper around the ArduinoHttpClient that makes get and post requests far easier.",
 	"keywords": "http",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Hard-Stuff/HardStuff_pio_lib_Http.git"
+		"url": "https://github.com/Hard-Stuff/HardStuff-piolib-Http.git"
 	},
 	"authors": [
 		{

@@ -275,13 +275,18 @@ public:
         {
             if (this->headerAvailable())
             {
-                response.addHeader(this->readHeaderName(), this->readHeaderValue());
-                response.header_count = i;
+                response.headers[response.header_count].key = this->readHeaderName();
+                response.headers[response.header_count].value = this->readHeaderValue();
+                response.header_count = min(response.header_count + 1, MAX_HEADERS);
             }
             else
             {
                 break;
             }
+        }
+        if (this->headerAvailable())
+        {
+            Serial.println("MAX HEADERS REACHED!");
         }
         response.content_length = this->contentLength();
         response.is_chunked = this->isResponseChunked();
