@@ -57,6 +57,8 @@ void loop() {
 
 -   `postToHTTPServer(String endpoint, HardStuffHttpRequest *request)` is for performing a POST request to a given endpoint. Use the HardStuffHttpRequest to define the headers, params, and content to post.
 -   `getFromHTTPServer(String endpoint, HardStuffHttpRequest *request, bool skip_body)` is for performing a GET request to a given endpoint. You can include request params/headers (optional), and you can choose to skip_body if, for example, you're streaming the content into a file or memory during OTA updates.
+-   `formatTimeISO8601(time_t t)` is for converting an epoch timestamp into an ISO8601 string (YYYY-MM-DDThh:mm:ssZ).
+-   `formatTimeFromISO8601(String timestamp)` is for converting an ISO8601 string (YYYY-MM-DDThh:mm:ssZ) into an epoch timestamp.
 
 ### Dependencies
 

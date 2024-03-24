@@ -4,7 +4,9 @@
 #include <TimeLib.h>
 #include <ArduinoHttpClient.h>
 
-static const int MAX_HEADERS = 10;
+#ifndef HTTP_MAX_HEADERS
+#define HTTP_MAX_HEADERS 10
+#endif
 
 #pragma region HTTP_STRUCTS
 struct KeyValuePair
@@ -15,18 +17,18 @@ struct KeyValuePair
 
 struct HardStuffHttpRequest
 {
-    KeyValuePair headers[MAX_HEADERS]; // Request headers
-    KeyValuePair params[MAX_HEADERS];  // Request headers
-    int header_count = 0;              // Number of headers in request
-    int param_count = 0;               // Number of params in request
-    String content = "";               // Request content
+    KeyValuePair headers[HTTP_MAX_HEADERS]; // Request headers
+    KeyValuePair params[HTTP_MAX_HEADERS];  // Request headers
+    int header_count = 0;                   // Number of headers in request
+    int param_count = 0;                    // Number of params in request
+    String content = "";                    // Request content
 
     /**
      * @brief Add a header to the request in a key: value fashion
      */
     void addHeader(const String &key, const String &value)
     {
-        if (header_count < MAX_HEADERS)
+        if (header_count < HTTP_MAX_HEADERS)
         {
             headers[header_count].key = key;
             headers[header_count].value = value;
@@ -41,7 +43,7 @@ struct HardStuffHttpRequest
      */
     void addParam(const String &key, const String &value)
     {
-        if (param_count < MAX_HEADERS)
+        if (param_count < HTTP_MAX_HEADERS)
         {
             params[param_count].key = key;
             params[param_count].value = value;
@@ -99,12 +101,12 @@ struct HardStuffHttpRequest
 
 struct HardStuffHttpResponse
 {
-    int status_code = 0;               // HTTP status code
-    KeyValuePair headers[MAX_HEADERS]; // Response headers
-    int header_count = 0;              // Number of headers in response
-    String body = "";                  // Response body
-    int content_length = 0;            // Content length
-    bool is_chunked = false;           // Flag for chunked response
+    int status_code = 0;                    // HTTP status code
+    KeyValuePair headers[HTTP_MAX_HEADERS]; // Response headers
+    int header_count = 0;                   // Number of headers in response
+    String body = "";                       // Response body
+    int content_length = 0;                 // Content length
+    bool is_chunked = false;                // Flag for chunked response
 
     // Quick-check if the status code was between 200 and 300
     bool success() const { return status_code >= 200 && status_code < 300; }
@@ -132,12 +134,12 @@ struct HardStuffHttpResponse
      */
     void clear()
     {
-        status_code = 0;      // HTTP status code
-        headers[MAX_HEADERS]; // Response headers
-        header_count = 0;     // Number of headers in response
-        body = "";            // Response body
-        content_length = 0;   // Content length
-        is_chunked = false;   // Flag for chunked response
+        status_code = 0;           // HTTP status code
+        headers[HTTP_MAX_HEADERS]; // Response headers
+        header_count = 0;          // Number of headers in response
+        body = "";                 // Response body
+        content_length = 0;        // Content length
+        is_chunked = false;        // Flag for chunked response
 
         // Reset headers and header count
         for (int i = 0; i < header_count; ++i)
@@ -198,13 +200,13 @@ public:
         Serial.print(F("Performing HTTP POST request... "));
 
         response.status_code = this->responseStatusCode();
-        for (int i = 0; i < MAX_HEADERS; i++)
+        for (int i = 0; i < HTTP_MAX_HEADERS; i++)
         {
             if (this->headerAvailable())
             {
                 response.headers[response.header_count].key = this->readHeaderName();
                 response.headers[response.header_count].value = this->readHeaderValue();
-                response.header_count = min(response.header_count + 1, MAX_HEADERS);
+                response.header_count = min(response.header_count + 1, HTTP_MAX_HEADERS);
             }
             else
             {
@@ -271,13 +273,13 @@ public:
         // Serial.print(F("Performing HTTP GET request... "));
 
         response.status_code = this->responseStatusCode();
-        for (int i = 0; i < MAX_HEADERS; i++)
+        for (int i = 0; i < HTTP_MAX_HEADERS; i++)
         {
             if (this->headerAvailable())
             {
                 response.headers[response.header_count].key = this->readHeaderName();
                 response.headers[response.header_count].value = this->readHeaderValue();
-                response.header_count = min(response.header_count + 1, MAX_HEADERS);
+                response.header_count = min(response.header_count + 1, HTTP_MAX_HEADERS);
             }
             else
             {
@@ -296,5 +298,49 @@ public:
             this->stop();
         }
         return response;
+    }
+
+public:
+    /**
+     * @brief Format a time_t value into an ISO8601 String
+     * ISO8601 is, YYYY-MM-DDThh:mm:ssZ
+     */
+    String formatTimeISO8601(time_t t)
+    {
+        char buffer[25];
+
+        // Break down time_t into its components
+        int Year = year(t);
+        int Month = month(t);
+        int Day = day(t);
+        int Hour = hour(t);
+        int Minute = minute(t);
+        int Second = second(t);
+
+        // Format the string in ISO 8601 format
+        // Note: This assumes UTC time. Adjust accordingly if using local time.
+        snprintf(buffer, sizeof(buffer), "%04d-%02d-%02dT%02d:%02d:%02d.000Z",
+                 Year, Month, Day, Hour, Minute, Second);
+
+        return String(buffer);
+    }
+
+    /**
+     * @brief Format an ISO8601 String into a time_t value
+     * ISO8601 is, YYYY-MM-DDThh:mm:ssZ
+     */
+    time_t formatTimeFromISO8601(String timestamp)
+    {
+        int Year, Month, Day, Hour, Minute, Second;
+        sscanf(timestamp.c_str(), "%04d-%02d-%02dT%02d:%02d:%02d.000Z",
+               &Year, &Month, &Day, &Hour, &Minute, &Second);
+        tmElements_t tm;
+        tm.Year = Year - 1970; // Adjust year
+        tm.Month = Month;      // TODO: Adjust month
+        tm.Day = Day;
+        tm.Hour = Hour;
+        tm.Minute = Minute;
+        tm.Second = Second;
+        return makeTime(tm); // Convert to time_t
     }
 };
