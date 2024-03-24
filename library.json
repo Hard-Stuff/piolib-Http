@@ -5,7 +5,7 @@
 	"keywords": "http",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Hard-Stuff/HardStuff-piolib-Http.git"
+		"url": "https://github.com/Hard-Stuff/piolib-Http.git"
 	},
 	"authors": [
 		{
