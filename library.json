@@ -1,5 +1,5 @@
 {
-	"name": "HardStuff-piolib-Http",
+	"name": "Http",
 	"version": "0.0.1",
 	"description": "A wrapper around the ArduinoHttpClient that makes get and post requests far easier.",
 	"keywords": "http",

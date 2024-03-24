@@ -17,7 +17,7 @@ This is specifically designed for GET and POST requests. Use more-or-less as nor
 #include <WiFiClientSecure.h>
 WiFiClientSecure wifi_client;
 
-#include <HardStuff_pio_lib_Http.hpp>
+#include <HardStuff-Http.hpp>
 HardStuffHttpClient http_wiremock(wifi_client, WIREMOCK_SERVER, WIREMOCK_PORT); // Create an HTTP wrapper around the client
 
 void setup() {
