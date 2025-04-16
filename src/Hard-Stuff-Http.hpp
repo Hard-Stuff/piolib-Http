@@ -156,7 +156,7 @@ class HardStuffHttpClient : public HttpClient
 public:
     // HttpClient http(HTTP_UNDERLYING_CLIENT, HTTP_SERVER, HTTP_PORT);
     // Implementation of the constructor for HardStuffHttpClient
-    HardStuffHttpClient(Client &underlying_client, const char *server_name, uint16_t server_port) : HttpClient(underlying_client, server_name, server_port){};
+    HardStuffHttpClient(Client &underlying_client, const char *server_name, uint16_t server_port) : HttpClient(underlying_client, server_name, server_port) {};
 
     /**
      * @brief Post some content string to a given endpoint of the attached server
@@ -178,12 +178,16 @@ public:
         }
 
         this->beginRequest();
-        this->post(endpoint);
+        int result = this->post(endpoint);
+        if (result < 0)
+        {
+            response.status_code = result;
+            return response;
+        }
         for (int i = 0; i < request->header_count; i++)
         {
             this->sendHeader(request->headers[i].key, request->headers[i].value);
         }
-        Serial.println("B");
         this->sendHeader("Content-Length", request->content.length());
         this->beginBody();
         // this->println(request->content);
@@ -248,7 +252,12 @@ public:
         }
         // Get
         this->beginRequest();
-        this->get(endpoint);
+        int result = this->get(endpoint);
+        if (result < 0)
+        {
+            response.status_code = result;
+            return response;
+        }
 
         if (this->getWriteError() != 0)
         {
