@@ -204,6 +204,10 @@ public:
         Serial.print(F("Performing HTTP POST request... "));
 
         response.status_code = this->responseStatusCode();
+        if (response.status_code < 0)
+        {
+            return response;
+        }
         for (int i = 0; i < HTTP_MAX_HEADERS; i++)
         {
             if (this->headerAvailable())
@@ -282,6 +286,10 @@ public:
         // Serial.print(F("Performing HTTP GET request... "));
 
         response.status_code = this->responseStatusCode();
+        if (response.status_code < 0)
+        {
+            return response;
+        }
         for (int i = 0; i < HTTP_MAX_HEADERS; i++)
         {
             if (this->headerAvailable())
