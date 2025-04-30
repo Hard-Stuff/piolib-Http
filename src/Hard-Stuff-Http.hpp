@@ -163,9 +163,10 @@ public:
      *
      * @param endpoint Given endpoint, e.g. "/device_1/shadow"
      * @param request A request object that contains contents and headers
+     * @param skip_body Don't write the response's body to a .body (good for long bodies in small memory situations)
      * @return HardStuffHttpResponse, the response as an HardStuffHttpResponse object
      */
-    HardStuffHttpResponse postToHTTPServer(String endpoint, HardStuffHttpRequest *request)
+    HardStuffHttpResponse postToHTTPServer(String endpoint, HardStuffHttpRequest *request, bool skip_body = false)
     {
         HardStuffHttpResponse response;
         // Post the HTTP request
@@ -226,8 +227,13 @@ public:
             Serial.println("MAX HEADERS REACHED!");
         }
         this->skipResponseHeaders();
-        response.body = this->responseBody();
-        this->stop();
+        response.content_length = this->contentLength();
+        response.is_chunked = this->isResponseChunked();
+        if (!skip_body)
+        {
+            response.body = this->responseBody();
+            this->stop();
+        }
         return response;
     }
 
@@ -236,7 +242,7 @@ public:
      *
      * @param endpoint Given endpoint, e.g. "/version"
      * @param request
-     * @param skip_body Rarely used, only in circumstances where you want to stream the body response somewhere else (other than a string)
+     * @param skip_body Don't write the response's body to a .body (good for long bodies in small memory situations)
      * @return HardStuffHttpResponse
      */
     HardStuffHttpResponse getFromHTTPServer(String endpoint, HardStuffHttpRequest *request = nullptr, bool skip_body = false)
@@ -309,6 +315,7 @@ public:
         }
         response.content_length = this->contentLength();
         response.is_chunked = this->isResponseChunked();
+        this->skipResponseHeaders();
         if (!skip_body)
         {
             response.body = this->responseBody();

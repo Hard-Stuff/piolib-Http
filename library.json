@@ -1,6 +1,6 @@
 {
 	"name": "Http",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"description": "A wrapper around the ArduinoHttpClient that makes get and post requests far easier.",
 	"keywords": "http",
 	"repository": {
