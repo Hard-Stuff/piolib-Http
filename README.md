@@ -4,7 +4,7 @@ This PlatformIO lib is designed to abstract complexity away from using the Ardui
 
 -   provide useful structs for bundling request and response details, `HardStuffHttpRequest` and `HardStuffHttpResponse`
 -   calling high-level functions rather than low-level functions (e.g. `getFromHTTPServer` with bundled request details and returning bundled response details, instead of `beginRequest` then `get` then manually loading each header then manually compiling the params in the url then...)
--   automatically follows redirects (up to 2). _(This assumes your CA Certs can follow the redirects.)_
+-   **automatically follows redirects (up to 2)**. _(This assumes your CA Certs can follow the redirects.)_
 
 ## Usage
 
@@ -13,7 +13,7 @@ This is specifically designed for GET and POST requests. Use more-or-less as nor
 ### Basic Example
 
 ```cpp
-#include <configs/wiremock.h> // Define your wiremock details in a config
+#include <configs/wiremock.h> // Define your wiremock details in a config, i.e. WIREMOCK_SERVER & WIREMOCK_PORT
 
 #include <WiFiClientSecure.h>
 WiFiClientSecure wifi_client;
@@ -32,7 +32,7 @@ void loop() {
 
     HardStuffHttpResponse response = http_wiremock.getFromHTTPServer("/hello_world", request); // Perform a get request on the /hello_world endpoint
     response.print(); // print the HTTP response
-    delay(1000);
+    // continue as normal
 }
 ```
 
